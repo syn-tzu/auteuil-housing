@@ -2,7 +2,7 @@ import type { Lang } from "./types";
 
 const STRINGS = {
   en: {
-    all: "All", rent: "Rent", buy: "Buy",
+    all: "All", rent: "Rent", buy: "Buy", filters: "Filters",
     quartier: "Quartier", anyQuartier: "Any quartier",
     auteuil_nord: "Auteuil Nord", auteuil_sud: "Auteuil Sud", muette: "Muette / Passy", other: "Other 16e",
     apartment: "Apartment", house: "House", hotel_particulier: "Hôtel particulier",
@@ -22,7 +22,7 @@ const STRINGS = {
     parkingTag: "Parking", elevatorTag: "Elevator", land: "land",
   },
   fr: {
-    all: "Tous", rent: "Louer", buy: "Acheter",
+    all: "Tous", rent: "Louer", buy: "Acheter", filters: "Filtres",
     quartier: "Quartier", anyQuartier: "Tous quartiers",
     auteuil_nord: "Auteuil Nord", auteuil_sud: "Auteuil Sud", muette: "Muette / Passy", other: "Autre 16e",
     apartment: "Appartement", house: "Maison", hotel_particulier: "Hôtel particulier",
@@ -36,7 +36,7 @@ const STRINGS = {
     floor: "étage", groundFloor: "rez-de-chaussée", pieces: "pièces", bedroomsShort: "ch.",
     favorite: "Favori", reject: "Passer", open: "Ouvrir", noPhoto: "Pas de photo",
     addNote: "Ajouter une note…", send: "Enregistrer", new: "Nouveau", approx: "Position approx.",
-    listView: "Liste", mapView: "Carte", signOut: "Déconnexion", capture: "Capturer", log: "Journal",
+    listView: "Liste", mapView: "Carte", signOut: "Quitter", capture: "Capturer", log: "Journal",
     empty: "Pas encore d'annonces. Elles apparaîtront ici dès l'arrivée des alertes email.",
     you: "vous", furnished: "Meublé", cellar: "Cave", terrace: "Terrasse", balconyTag: "Balcon",
     parkingTag: "Parking", elevatorTag: "Ascenseur", land: "terrain",

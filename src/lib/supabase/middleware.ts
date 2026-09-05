@@ -32,7 +32,8 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/api/cron") ||
     path.startsWith("/auth") ||
     path === "/manifest.webmanifest" ||
-    path === "/icon.svg";
+    path === "/icon.svg" ||
+    (process.env.NODE_ENV !== "production" && path.startsWith("/preview"));
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();

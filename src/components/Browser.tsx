@@ -43,6 +43,10 @@ export default function Browser({ listings: initial, userId, names }: Props) {
   const [hideRejected, setHideRejected] = useState(true);
   const [onlyFavs, setOnlyFavs] = useState(false);
   const [sort, setSort] = useState<Sort>("new");
+  const [showFilters, setShowFilters] = useState(false); // phones: extra filters collapsed by default
+  const activeFilters =
+    [quartier, ptype, minPrice, maxPrice, minSurface, bedrooms].filter(Boolean).length +
+    [needOutdoor, needElevator, needParking, onlyFavs].filter(Boolean).length;
 
   useEffect(() => {
     setLang(readLang());
@@ -136,34 +140,39 @@ export default function Browser({ listings: initial, userId, names }: Props) {
         </form>
       </header>
 
-      <div className="filters">
+      <div className={"filters" + (showFilters ? " open" : "")}>
         <div className="seg">
           {(["all", "buy", "rent"] as Tx[]).map((v) => (
             <button key={v} className={tx === v ? "on" : ""} onClick={() => setTx(v)}>{T(v)}</button>
           ))}
         </div>
-        <select value={quartier} onChange={(e) => setQuartier(e.target.value)}>
-          <option value="">{T("anyQuartier")}</option>
-          <option value="auteuil_nord">{T("auteuil_nord")}</option>
-          <option value="auteuil_sud">{T("auteuil_sud")}</option>
-          <option value="muette">{T("muette")}</option>
-          <option value="other">{T("other")}</option>
-        </select>
-        <select value={ptype} onChange={(e) => setPtype(e.target.value)}>
-          <option value="">{T("anyType")}</option>
-          <option value="apartment">{T("apartment")}</option>
-          <option value="house">{T("house")}</option>
-          <option value="hotel_particulier">{T("hotel_particulier")}</option>
-        </select>
-        <input inputMode="numeric" placeholder={T("minPrice")} value={minPrice} onChange={(e) => setMinPrice(e.target.value)} style={{ width: 90 }} />
-        <input inputMode="numeric" placeholder={T("maxPrice")} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} style={{ width: 90 }} />
-        <input inputMode="numeric" placeholder={T("minSurface")} value={minSurface} onChange={(e) => setMinSurface(e.target.value)} style={{ width: 80 }} />
-        <input inputMode="numeric" placeholder={T("bedrooms")} value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} style={{ width: 90 }} />
-        <button className={"chip" + (needOutdoor ? " on" : "")} onClick={() => setNeedOutdoor(!needOutdoor)}>{T("balcony")}</button>
-        <button className={"chip" + (needElevator ? " on" : "")} onClick={() => setNeedElevator(!needElevator)}>{T("elevator")}</button>
-        <button className={"chip" + (needParking ? " on" : "")} onClick={() => setNeedParking(!needParking)}>{T("parking")}</button>
-        <button className={"chip" + (hideRejected ? " on" : "")} onClick={() => setHideRejected(!hideRejected)}>{T("hideRejected")}</button>
-        <button className={"chip" + (onlyFavs ? " on" : "")} onClick={() => setOnlyFavs(!onlyFavs)}>{T("onlyFavs")}</button>
+        <button className={"chip toggle" + (activeFilters ? " on" : "")} onClick={() => setShowFilters(!showFilters)}>
+          {T("filters")}{activeFilters ? ` · ${activeFilters}` : ""} {showFilters ? "▴" : "▾"}
+        </button>
+        <div className="more">
+          <select value={quartier} onChange={(e) => setQuartier(e.target.value)}>
+            <option value="">{T("anyQuartier")}</option>
+            <option value="auteuil_nord">{T("auteuil_nord")}</option>
+            <option value="auteuil_sud">{T("auteuil_sud")}</option>
+            <option value="muette">{T("muette")}</option>
+            <option value="other">{T("other")}</option>
+          </select>
+          <select value={ptype} onChange={(e) => setPtype(e.target.value)}>
+            <option value="">{T("anyType")}</option>
+            <option value="apartment">{T("apartment")}</option>
+            <option value="house">{T("house")}</option>
+            <option value="hotel_particulier">{T("hotel_particulier")}</option>
+          </select>
+          <input inputMode="numeric" placeholder={T("minPrice")} value={minPrice} onChange={(e) => setMinPrice(e.target.value)} style={{ width: 90 }} />
+          <input inputMode="numeric" placeholder={T("maxPrice")} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} style={{ width: 90 }} />
+          <input inputMode="numeric" placeholder={T("minSurface")} value={minSurface} onChange={(e) => setMinSurface(e.target.value)} style={{ width: 80 }} />
+          <input inputMode="numeric" placeholder={T("bedrooms")} value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} style={{ width: 90 }} />
+          <button className={"chip" + (needOutdoor ? " on" : "")} onClick={() => setNeedOutdoor(!needOutdoor)}>{T("balcony")}</button>
+          <button className={"chip" + (needElevator ? " on" : "")} onClick={() => setNeedElevator(!needElevator)}>{T("elevator")}</button>
+          <button className={"chip" + (needParking ? " on" : "")} onClick={() => setNeedParking(!needParking)}>{T("parking")}</button>
+          <button className={"chip" + (hideRejected ? " on" : "")} onClick={() => setHideRejected(!hideRejected)}>{T("hideRejected")}</button>
+          <button className={"chip" + (onlyFavs ? " on" : "")} onClick={() => setOnlyFavs(!onlyFavs)}>{T("onlyFavs")}</button>
+        </div>
         <div className="seg" title={T("forYouHint")}>
           {(["new", "price", "size", "foryou"] as Sort[]).map((v) => (
             <button key={v} className={sort === v ? "on" : ""} disabled={v === "foryou" && !scores} onClick={() => setSort(v)}>
@@ -198,7 +207,14 @@ export default function Browser({ listings: initial, userId, names }: Props) {
           )}
         </section>
         <aside className="mapwrap">
-          <MapView listings={filtered} lang={lang} userId={userId} selected={selected} onSelect={(id) => { setSelected(id); setMode("list"); }} />
+          <MapView
+            listings={filtered}
+            lang={lang}
+            userId={userId}
+            selected={selected}
+            visibleKey={mode}
+            onSelect={(id) => { setSelected(id); setMode("list"); }}
+          />
         </aside>
       </div>
 

@@ -36,7 +36,12 @@ input, select, textarea { font: inherit; }
   padding: 10px 14px;
   background: var(--accent); color: var(--accent-ink);
 }
-.topbar h1 { font-size: 17px; margin: 0; font-weight: 600; letter-spacing: 0.2px; }
+.topbar h1 { font-size: 17px; margin: 0; font-weight: 600; letter-spacing: 0.2px; white-space: nowrap; }
+@media (max-width: 899px) {
+  .topbar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
+  .topbar h1 { font-size: 15px; }
+  .topbar a, .topbar button { padding: 5px 8px; font-size: 12px; white-space: nowrap; }
+}
 .topbar .spacer { flex: 1; }
 .topbar a, .topbar button {
   color: var(--accent-ink); background: rgba(255,255,255,0.12); border: 0;
@@ -46,12 +51,12 @@ input, select, textarea { font: inherit; }
 
 /* ---- layout ---- */
 .main { display: grid; grid-template-columns: 1fr; flex: 1; }
+.mapwrap { height: 42dvh; min-height: 260px; }
 @media (min-width: 900px) {
   .main { grid-template-columns: 1fr minmax(360px, 45%); }
   .mapwrap { position: sticky; top: 52px; height: calc(100dvh - 52px); }
 }
 .list { padding: 12px; }
-.mapwrap { height: 42dvh; min-height: 260px; }
 .map { height: 100%; width: 100%; }
 @media (max-width: 899px) {
   .main.mode-list .mapwrap { display: none; }
@@ -74,6 +79,12 @@ input, select, textarea { font: inherit; }
 .chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 10px; font-size: 13px; color: var(--muted); }
 .chip.on { border-color: var(--accent); color: var(--accent); background: #eef2f8; }
 .count { font-size: 13px; color: var(--muted); margin-left: auto; }
+.filters .more { display: contents; }
+.filters .toggle { display: none; }
+@media (max-width: 899px) {
+  .filters .toggle { display: inline-block; }
+  .filters:not(.open) .more { display: none; }
+}
 
 /* ---- cards ---- */
 .cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
