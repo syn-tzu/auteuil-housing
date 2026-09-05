@@ -1,0 +1,12 @@
+{
+  "name": "Auteuil & Passy",
+  "short_name": "Auteuil",
+  "description": "Our Paris 16e housing search",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f5f0",
+  "theme_color": "#1f3a5f",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
