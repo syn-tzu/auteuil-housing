@@ -14,10 +14,15 @@ a Gmail "app password" (lets the app read the alert inbox), and later a Vercel a
 2. Click **New project**. Name it `auteuil-housing`, pick a strong database password (save it in your
    password manager; you rarely need it again), choose region **West EU (Paris)** or **Central EU
    (Frankfurt)**, and the **Free** plan. Wait about a minute for it to be created.
-3. In the left menu click the gear icon **Project Settings → API**. Copy these three values into `.env.local`:
-   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **service_role** key (click "Reveal") → `SUPABASE_SERVICE_ROLE_KEY`. Treat this one like a password.
+3. Copy three values into `.env.local`:
+   - **Project URL**: click the green **Connect** button at the top, choose **App Frameworks → Next.js**.
+     Copy the address on the `NEXT_PUBLIC_SUPABASE_URL=` line (it looks like `https://abcdefgh.supabase.co`)
+     → `NEXT_PUBLIC_SUPABASE_URL`
+   - Left menu, gear icon **Project Settings → API Keys**. Under **Publishable key**, copy the key starting
+     `sb_publishable_` → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Same page, under **Secret keys**, click the eye icon then copy the key starting `sb_secret_`
+     → `SUPABASE_SERVICE_ROLE_KEY`. Treat this one like a password.
+   (Older guides call these "anon" and "service_role" keys; the new names work the same.)
 4. Create the tables: in the left menu click **SQL Editor → New query**. Open the file
    `supabase/migrations/0001_init.sql` from this folder in Notepad, copy *all* of it, paste it into the
    query box, and click **Run**. You should see "Success. No rows returned".
