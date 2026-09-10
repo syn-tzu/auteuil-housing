@@ -1,0 +1,20 @@
+# Asks the deployed app to check the alert inbox every 30 minutes.
+# Vercel's free plan only runs its own scheduled job once a day (see vercel.json), so GitHub
+# provides the frequent nudges. Needs two repository secrets: APP_URL and CRON_SECRET.
+name: Check inbox
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the app's ingestion endpoint
+        run: |
+          if [ -z "${{ secrets.APP_URL }}" ]; then echo "APP_URL secret not set"; exit 1; fi
+          curl --fail --silent --show-error --max-time 120 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/ingest"

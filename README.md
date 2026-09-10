@@ -50,8 +50,9 @@ npm run typecheck
 
 ## Deploy
 
-Push to GitHub, import into Vercel, add the same environment variables. `vercel.json` schedules the
-inbox check; Vercel sends `Authorization: Bearer $CRON_SECRET` automatically.
+Push to GitHub, import into Vercel, add the same environment variables. `vercel.json` schedules a
+daily inbox check (the most Vercel's free plan allows); `.github/workflows/ingest.yml` calls the same
+endpoint every 30 minutes and needs the repository secrets `APP_URL` and `CRON_SECRET`.
 
 ## Notes
 
