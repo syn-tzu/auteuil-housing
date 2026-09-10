@@ -66,11 +66,36 @@ La Muette; all three are inside Paris 16e, postcode 75016).
 
 Tip: you don't need to read that inbox. The app reads new emails every 30 minutes and marks them as read.
 
-## 5. Vercel — putting the app on the internet so it works on your phones (20 minutes, later)
+## 5. Vercel — putting the app on the internet so it works on your phones (20 minutes)
 
-Not needed to try the app on this computer. When you're ready, I'll walk you through it: a free GitHub
-account, a free Vercel account, one click to import the project, and pasting the same `.env.local`
-values into Vercel's settings. Vercel then runs the inbox check automatically every 30 minutes.
+The code is already on GitHub at https://github.com/syn-tzu/auteuil-housing (private).
+
+1. Go to https://vercel.com/signup and choose **Continue with GitHub**. Pick the free **Hobby** plan.
+2. On the Vercel dashboard click **Add New… → Project**. Find **auteuil-housing** in the list and click
+   **Import**. If it isn't listed, click "Adjust GitHub App Permissions" and give Vercel access to that
+   repository.
+3. On the import screen, leave Framework as **Next.js** and the other settings as they are.
+4. Open the **Environment Variables** section. Open your `.env.local` file in Notepad, select all
+   (Ctrl+A), copy (Ctrl+C), click into the **Key** box on Vercel and paste (Ctrl+V). Vercel fills in all
+   seven values at once. Check they're all there: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
+   SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, CRON_SECRET.
+5. Click **Deploy** and wait about two minutes. When it says Congratulations, click **Continue to
+   Dashboard**. Near the top you'll see the app's address, something like
+   `https://auteuil-housing.vercel.app`. Copy it; you'll need it twice below.
+6. Open that address in your browser and sign in with the Supabase login you created in step 1.5.
+
+### 5b. Make the inbox check run every 30 minutes
+
+Vercel's free plan only runs the check once a day, so GitHub gives the extra nudges. Two settings:
+
+1. Go to https://github.com/syn-tzu/auteuil-housing/settings/secrets/actions and click
+   **New repository secret**.
+2. Name: `APP_URL`, Secret: the app's address from step 5.5, without a trailing slash
+   (e.g. `https://auteuil-housing.vercel.app`). Click **Add secret**.
+3. **New repository secret** again. Name: `CRON_SECRET`, Secret: the same CRON_SECRET line's value from
+   `.env.local`. Add.
+4. Go to https://github.com/syn-tzu/auteuil-housing/actions, click **Check inbox** on the left, then
+   **Run workflow → Run workflow**. A green tick within a minute means everything is connected.
 
 ## 6. Putting it on your Android phone
 
