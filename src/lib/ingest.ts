@@ -40,14 +40,26 @@ function canonicalUrl(u: string): string {
   }
 }
 
-export function dedupKey(site: string, l: ExtractedListing): string {
-  if (l.source_listing_id) return `${site}:id:${l.source_listing_id.trim().toLowerCase()}`;
-  if (l.source_url) return `${site}:url:${canonicalUrl(l.source_url)}`;
+/**
+ * All the keys under which this listing might already be stored, most reliable first.
+ * The URL is stable across emails; the "listing id" Claude picks can vary (site number vs agency
+ * reference), so it is only a secondary match; the fingerprint catches listings with neither.
+ */
+export function dedupKeys(site: string, l: ExtractedListing): string[] {
+  const keys: string[] = [];
+  if (l.source_url) keys.push(`${site}:url:${canonicalUrl(l.source_url)}`);
+  if (l.source_listing_id) keys.push(`${site}:id:${l.source_listing_id.trim().toLowerCase()}`);
   const fp = createHash("sha1")
-    .update([l.transaction_type, l.property_type, l.price_eur, l.surface_sqm, l.street_address?.toLowerCase(), l.pieces_count].join("|"))
+    .update([l.transaction_type, l.property_type, l.price_eur, l.surface_sqm, normalizeAddress(l.street_address, l.postal_code).street, l.pieces_count].join("|"))
     .digest("hex")
     .slice(0, 16);
-  return `${site}:fp:${fp}`;
+  keys.push(`${site}:fp:${fp}`);
+  return keys;
+}
+
+/** The key a brand-new row is stored under. */
+export function dedupKey(site: string, l: ExtractedListing): string {
+  return dedupKeys(site, l)[0];
 }
 
 function pricePerSqm(l: ExtractedListing): number | null {
@@ -74,12 +86,19 @@ export async function ingestExtraction(result: ExtractionResult, meta: IngestMet
       continue;
     }
 
-    const key = dedupKey(site, l);
-    const { data: existing } = await db
+    const keys = dedupKeys(site, l);
+    const key = keys[0];
+    // Match on any candidate key, or on the same canonical URL stored by an earlier run.
+    let query = db
       .from("listings")
-      .select("id, lat, lng, geocode_precise, canonical_property_id, photo_urls")
-      .eq("dedup_key", key)
-      .maybeSingle();
+      .select("id, lat, lng, geocode_precise, canonical_property_id, photo_urls, dedup_key")
+      .eq("source_site", site);
+    query = l.source_url
+      ? query.or(`dedup_key.in.(${keys.map((k) => `"${k}"`).join(",")}),source_url.eq."${canonicalUrl(l.source_url)}"`)
+      : query.in("dedup_key", keys);
+    const { data: matches, error: mErr } = await query.order("first_seen_at", { ascending: true }).limit(1);
+    if (mErr) throw new Error(`lookup failed: ${mErr.message}`);
+    const existing = matches?.[0] ?? null;
 
     // ---- canonical property (only when we have a street number) ----
     const norm = normalizeAddress(l.street_address, l.postal_code);
@@ -125,9 +144,9 @@ export async function ingestExtraction(result: ExtractionResult, meta: IngestMet
 
     const row = {
       source_site: site,
-      source_url: l.source_url ?? meta.url ?? null,
+      source_url: l.source_url ? canonicalUrl(l.source_url) : meta.url ?? null,
       source_listing_id: l.source_listing_id,
-      dedup_key: key,
+      dedup_key: existing?.dedup_key ?? key,
       canonical_property_id: propertyId,
       last_seen_at: now,
       is_active: true,

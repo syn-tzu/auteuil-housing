@@ -33,6 +33,9 @@ async function main() {
       subject: mail.subject,
       from: mail.from?.text,
     });
+  } else if (url === "email") {
+    // `npm run test:extract -- samples/alert.html email` treats a saved HTML body as an alert email.
+    result = await extractListings({ kind: "email", html: raw.toString("utf8"), subject: file, from: "test" });
   } else {
     result = await extractListings({ kind: "page", html: raw.toString("utf8"), url });
   }

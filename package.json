@@ -9,8 +9,11 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "check": "tsx scripts/check-setup.ts",
+    "samples": "tsx scripts/fetch-samples.ts",
     "test:extract": "tsx scripts/test-extract.ts",
-    "ingest": "tsx scripts/ingest-once.ts"
+    "ingest": "tsx scripts/ingest-once.ts",
+    "ingest:file": "tsx scripts/ingest-file.ts",
+    "db": "tsx scripts/db.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

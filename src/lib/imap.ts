@@ -2,11 +2,14 @@ import { ImapFlow } from "imapflow";
 import { simpleParser } from "mailparser";
 import { extractListings } from "./extract";
 import { ingestExtraction, logIngest, alreadyIngested, type IngestSummary } from "./ingest";
+import { isAlertSender } from "./senders";
 
 export type EmailRunResult = {
+  unread: number; // unread emails in the inbox
+  matched: number; // of which from property sites
   processed: number;
   errors: number;
-  remaining: number;
+  remaining: number; // matched but left for the next run
   details: { subject: string; from: string; status: string; summary?: IngestSummary; error?: string }[];
 };
 
@@ -20,9 +23,10 @@ type Parsed = {
 };
 
 /**
- * Read unseen emails from the alert inbox, extract listings with Claude, store them,
- * and mark each successfully processed email as read. Processes `limit` emails per run
- * (in parallel) so a single run stays within the serverless time limit.
+ * Read unseen emails from property sites in the alert inbox, extract listings with Claude,
+ * store them, and mark each successfully processed email as read. Personal mail in the same
+ * inbox is never opened or marked. Processes `limit` emails per run (in parallel) so a single
+ * run stays within the serverless time limit.
  */
 export async function runEmailIngestion(opts: { limit?: number } = {}): Promise<EmailRunResult> {
   const limit = opts.limit ?? 5;
@@ -38,25 +42,40 @@ export async function runEmailIngestion(opts: { limit?: number } = {}): Promise<
     logger: false,
   });
 
-  const result: EmailRunResult = { processed: 0, errors: 0, remaining: 0, details: [] };
+  const result: EmailRunResult = { unread: 0, matched: 0, processed: 0, errors: 0, remaining: 0, details: [] };
   await client.connect();
   const lock = await client.getMailboxLock("INBOX");
   try {
     const uids = await client.search({ seen: false }, { uid: true });
     const list = Array.isArray(uids) ? uids : [];
-    const batch = list.slice(0, limit);
-    result.remaining = Math.max(0, list.length - batch.length);
+    result.unread = list.length;
+    if (!list.length) return result;
+
+    // Cheap pass: headers only, decide which emails are ours.
+    const candidates: { uid: number; from: string; subject: string }[] = [];
+    for await (const msg of client.fetch(list, { envelope: true }, { uid: true })) {
+      const from = msg.envelope?.from?.map((a) => a.address ?? "").join(",") ?? "";
+      const subject = msg.envelope?.subject ?? "(no subject)";
+      if (isAlertSender(from, subject)) candidates.push({ uid: msg.uid, from, subject });
+    }
+    result.matched = candidates.length;
+    const batch = candidates.slice(0, limit);
+    result.remaining = candidates.length - batch.length;
 
     const parsed: Parsed[] = [];
-    for (const uid of batch) {
-      const msg = await client.fetchOne(String(uid), { source: true }, { uid: true });
-      if (!msg || !msg.source) continue;
+    for (const c of batch) {
+      const msg = await client.fetchOne(String(c.uid), { source: true }, { uid: true });
+      if (!msg || !msg.source) {
+        result.details.push({ subject: c.subject, from: c.from, status: "error", error: "could not download email" });
+        result.errors++;
+        continue;
+      }
       const mail = await simpleParser(msg.source);
       parsed.push({
-        uid,
-        messageId: mail.messageId ?? `uid-${uid}-${user}`,
-        subject: mail.subject ?? "(no subject)",
-        from: mail.from?.text ?? "",
+        uid: c.uid,
+        messageId: mail.messageId ?? `uid-${c.uid}-${user}`,
+        subject: mail.subject ?? c.subject,
+        from: mail.from?.text ?? c.from,
         html: typeof mail.html === "string" ? mail.html : undefined,
         text: mail.text ?? undefined,
       });

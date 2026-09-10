@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { ExtractionResult } from "./schema";
+import { LlmExtractionResult, normalizeResult, type ExtractionResult } from "./schema";
 import { htmlToText } from "./html";
 
 const MODEL = "claude-opus-5";
@@ -13,10 +13,10 @@ Rules:
 - Keep numbers as plain numbers: "1 250 000 €" -> 1250000, "2 300 €/mois" -> 2300, "98,5 m²" -> 98.5.
 - transaction_type: "rent" for location / à louer / loyer; "buy" for vente / à vendre / achat.
 - property_type: apartment for appartement/duplex/studio/loft; house for maison/villa; hotel_particulier only when the text says hôtel particulier.
-- quartier: use Auteuil / Muette / Passy / Ranelagh / Village d'Auteuil / Porte d'Auteuil cues in the text; if only "16e" or "Paris 16" is given with no quartier, use "other".
+- quartier: use Auteuil / Muette / Passy / Ranelagh / Village d'Auteuil / Porte d'Auteuil cues in the text; if only "16e" or "Paris 16" is given with no quartier, use "unknown".
 - description_en / title_en: translate naturally into English. Keep French place and street names untranslated.
 - photo_urls: only real listing photos (URLs marked [img: ...] that look like property images). Never include logos or tracking pixels.
-- Leave a field null when it is not stated. Do not guess prices or surfaces.
+- Text fields: empty string when not stated. Yes/no fields: "unknown" when not stated. Numbers: null when not stated. Never guess prices or surfaces.
 - If the content is not about property listings, set is_listing_content=false and return an empty listings array.`;
 
 export type ExtractInput = {
@@ -55,7 +55,7 @@ export async function extractListings(input: ExtractInput): Promise<ExtractionRe
     model: MODEL,
     max_tokens: 16000,
     system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-    output_config: { effort: "medium", format: zodOutputFormat(ExtractionResult) },
+    output_config: { effort: "medium", format: zodOutputFormat(LlmExtractionResult) },
     messages: [{ role: "user", content: header + body }],
   });
 
@@ -65,5 +65,5 @@ export async function extractListings(input: ExtractInput): Promise<ExtractionRe
   if (!response.parsed_output) {
     throw new Error(`Claude returned no parseable output (stop_reason=${response.stop_reason})`);
   }
-  return response.parsed_output;
+  return normalizeResult(response.parsed_output);
 }
