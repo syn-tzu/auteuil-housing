@@ -62,6 +62,12 @@ export function dedupKey(site: string, l: ExtractedListing): string {
   return dedupKeys(site, l)[0];
 }
 
+const ROOM_SHARE = /\b(colocation|coliving|co-living|chambre (à louer|meublée|en colocation|chez l'habitant)|room ?share|shared (flat|apartment))\b/i;
+
+export function isRoomShare(l: ExtractedListing): boolean {
+  return ROOM_SHARE.test(`${l.title_fr ?? ""} ${l.title_en ?? ""} ${(l.description_fr ?? "").slice(0, 300)}`);
+}
+
 function pricePerSqm(l: ExtractedListing): number | null {
   if (!l.price_eur || !l.surface_sqm) return null;
   return Math.round(l.price_eur / l.surface_sqm);
@@ -77,6 +83,11 @@ export async function ingestExtraction(result: ExtractionResult, meta: IngestMet
   for (const l of result.listings) {
     // Ignore fragments with nothing to show.
     if (l.price_eur == null && l.surface_sqm == null && !l.source_url) {
+      summary.skipped++;
+      continue;
+    }
+    // Room-shares (a single room in a shared flat) are never what we're after.
+    if (isRoomShare(l)) {
       summary.skipped++;
       continue;
     }

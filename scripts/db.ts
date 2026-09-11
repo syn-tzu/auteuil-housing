@@ -38,10 +38,25 @@ async function main() {
       }))
     );
     console.log(`${data.length} active listing(s)`);
+  } else if (cmd === "show") {
+    // npm run db -- show [maxPrice]   full detail of active listings (optionally only those priced <= maxPrice)
+    const max = Number(process.argv[3]);
+    let q = db.from("listings").select("title_fr,transaction_type,price_eur,monthly_charges_eur,surface_sqm,pieces_count,bedroom_count,floor,quartier,street_address,source_url,agency_name,description_fr").eq("is_active", true);
+    if (max) q = q.lte("price_eur", max);
+    const { data, error } = await q.order("price_eur");
+    if (error) throw error;
+    for (const r of data ?? []) console.log(JSON.stringify({ ...r, description_fr: (r.description_fr ?? "").slice(0, 300) }, null, 1));
   } else if (cmd === "log") {
     const { data, error } = await db.from("ingest_log").select("created_at, channel, source_site, subject, status, listings_found, listings_new, error").order("created_at", { ascending: false }).limit(30);
     if (error) throw error;
     console.table(data);
+  } else if (cmd === "delete-title") {
+    // npm run db -- delete-title colocation   delete listings whose French title contains the text
+    const text = process.argv[3];
+    if (!text) throw new Error("usage: npm run db -- delete-title <text>");
+    const { count, error } = await db.from("listings").delete({ count: "exact" }).ilike("title_fr", `%${text}%`);
+    if (error) throw error;
+    console.log(`deleted ${count} listing(s) with "${text}" in the title`);
   } else if (cmd === "delete-site") {
     const site = process.argv[3];
     if (!site) throw new Error("usage: npm run db -- delete-site <source_site>");
