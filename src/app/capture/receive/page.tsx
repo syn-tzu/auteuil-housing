@@ -36,7 +36,7 @@ export default function ReceivePage() {
     <main className="page">
       <h1>Save to Auteuil</h1>
       {status.kind === "waiting" && <p>Waiting for the page… (if nothing happens in 10 seconds, close this and click the button again)</p>}
-      {status.kind === "sending" && <p>Reading the listing with Claude… this takes 10–30 seconds.<br /><small>{status.url}</small></p>}
+      {status.kind === "sending" && <p>Reading the page with Claude… 10 seconds for one listing, up to a minute for a results page.<br /><small>{status.url}</small></p>}
       {status.kind === "done" && (
         <p style={{ color: "var(--good)" }}>
           ✓ {status.text} <a href="/">Open the app</a>

@@ -4,7 +4,7 @@ import { extractListings } from "@/lib/extract";
 import { ingestExtraction, logIngest } from "@/lib/ingest";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 /** Receives { url, html, title } from the bookmarklet's popup page (same origin, signed-in). */
 export async function POST(request: Request) {

@@ -2,7 +2,7 @@ import type { Lang } from "./types";
 
 const STRINGS = {
   en: {
-    all: "All", rent: "Rent", buy: "Buy", filters: "Filters",
+    all: "All", rent: "Rent", buy: "Buy", filters: "Filters", checkInbox: "Check inbox",
     quartier: "Quartier", anyQuartier: "Any quartier",
     auteuil_nord: "Auteuil Nord", auteuil_sud: "Auteuil Sud", muette: "Muette / Passy", other: "Other 16e",
     apartment: "Apartment", house: "House", hotel_particulier: "Hôtel particulier",
@@ -17,12 +17,12 @@ const STRINGS = {
     favorite: "Favourite", reject: "Pass", open: "Open", noPhoto: "No photo",
     addNote: "Add a note…", send: "Save", new: "New", approx: "Approx. location",
     listView: "List", mapView: "Map", signOut: "Sign out", capture: "Capture", log: "Log",
-    empty: "No listings yet. Once alert emails arrive, they will show up here.",
+    empty: "No listings yet. They arrive from alert emails (press Check inbox), or search on SeLoger / Bien'ici / PAP and use the Save to Auteuil button on the results page (see Capture).",
     you: "you", furnished: "Furnished", cellar: "Cellar", terrace: "Terrace", balconyTag: "Balcony",
     parkingTag: "Parking", elevatorTag: "Elevator", land: "land",
   },
   fr: {
-    all: "Tous", rent: "Louer", buy: "Acheter", filters: "Filtres",
+    all: "Tous", rent: "Louer", buy: "Acheter", filters: "Filtres", checkInbox: "Relever",
     quartier: "Quartier", anyQuartier: "Tous quartiers",
     auteuil_nord: "Auteuil Nord", auteuil_sud: "Auteuil Sud", muette: "Muette / Passy", other: "Autre 16e",
     apartment: "Appartement", house: "Maison", hotel_particulier: "Hôtel particulier",
@@ -37,7 +37,7 @@ const STRINGS = {
     favorite: "Favori", reject: "Passer", open: "Ouvrir", noPhoto: "Pas de photo",
     addNote: "Ajouter une note…", send: "Enregistrer", new: "Nouveau", approx: "Position approx.",
     listView: "Liste", mapView: "Carte", signOut: "Quitter", capture: "Capturer", log: "Journal",
-    empty: "Pas encore d'annonces. Elles apparaîtront ici dès l'arrivée des alertes email.",
+    empty: "Pas encore d'annonces. Elles arrivent par les alertes email (bouton Relever), ou cherchez sur SeLoger / Bien'ici / PAP et utilisez le bouton Save to Auteuil sur la page de résultats (voir Capturer).",
     you: "vous", furnished: "Meublé", cellar: "Cave", terrace: "Terrasse", balconyTag: "Balcon",
     parkingTag: "Parking", elevatorTag: "Ascenseur", land: "terrain",
   },

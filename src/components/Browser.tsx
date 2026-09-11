@@ -127,11 +127,33 @@ export default function Browser({ listings: initial, userId, names }: Props) {
 
   const T = (k: Parameters<typeof t>[1]) => t(lang, k);
 
+  const [checking, setChecking] = useState(false);
+  async function checkInbox() {
+    setChecking(true);
+    try {
+      const res = await fetch("/api/ingest/run", { method: "POST" });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error ?? res.statusText);
+      const created = (j.details ?? []).reduce((n: number, d: { summary?: { created: number } }) => n + (d.summary?.created ?? 0), 0);
+      const msg =
+        lang === "fr"
+          ? `${j.matched} email(s) d'annonces non lus, ${j.processed} traité(s), ${created} nouvelle(s) annonce(s)${j.errors ? `, ${j.errors} erreur(s)` : ""}.`
+          : `${j.matched} unread listing email(s), ${j.processed} processed, ${created} new listing(s)${j.errors ? `, ${j.errors} error(s)` : ""}.`;
+      alert(msg);
+      if (created > 0 || j.processed > 0) window.location.reload();
+    } catch (e) {
+      alert((lang === "fr" ? "Échec : " : "Failed: ") + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setChecking(false);
+    }
+  }
+
   return (
     <div className="app">
       <header className="topbar">
         <h1>Auteuil &amp; Passy</h1>
         <div className="spacer" />
+        <button onClick={checkInbox} disabled={checking}>{checking ? "…" : T("checkInbox")}</button>
         <a href="/capture">{T("capture")}</a>
         <a href="/log">{T("log")}</a>
         <button onClick={toggleLang} title="Français / English">{lang === "en" ? "FR" : "EN"}</button>

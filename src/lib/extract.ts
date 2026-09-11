@@ -9,7 +9,7 @@ const MAX_CHARS = 180_000; // ~45k tokens; alert emails are far smaller
 const SYSTEM = `You extract French real-estate listings into structured JSON for a private two-person housing search in Paris 16e (Auteuil Nord, Auteuil Sud, Muette/Passy).
 
 Rules:
-- Return one entry per distinct property listing in the content. Alert emails often contain several. A page usually contains one main listing; ignore "similar listings" teasers on a page.
+- Return one entry per distinct property listing in the content. Alert emails often contain several. A listing detail page has one main listing (ignore its "similar listings" teasers). A search-results page has many listings: return every one of them, even if each has only a price, surface, rooms and a link.
 - Keep numbers as plain numbers: "1 250 000 €" -> 1250000, "2 300 €/mois" -> 2300, "98,5 m²" -> 98.5.
 - transaction_type: "rent" for location / à louer / loyer; "buy" for vente / à vendre / achat.
 - property_type: apartment for appartement/duplex/studio/loft; house for maison/villa; hotel_particulier only when the text says hôtel particulier.
