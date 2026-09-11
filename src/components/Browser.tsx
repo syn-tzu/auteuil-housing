@@ -30,7 +30,7 @@ export default function Browser({ listings: initial, userId, names }: Props) {
   const [mode, setMode] = useState<"list" | "map">("list");
   const [selected, setSelected] = useState<string | null>(null);
 
-  const [tx, setTx] = useState<Tx>("all");
+  const [tx, setTx] = useState<Tx>("rent"); // Stuart and Diana are renting; "All"/"Buy" stay available
   const [quartier, setQuartier] = useState("");
   const [ptype, setPtype] = useState("");
   const [minPrice, setMinPrice] = useState("");
