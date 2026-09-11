@@ -13,7 +13,8 @@
     "test:extract": "tsx scripts/test-extract.ts",
     "ingest": "tsx scripts/ingest-once.ts",
     "ingest:file": "tsx scripts/ingest-file.ts",
-    "db": "tsx scripts/db.ts"
+    "db": "tsx scripts/db.ts",
+    "test-user": "tsx scripts/test-user.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

@@ -51,6 +51,19 @@ export default function Browser({ listings: initial, userId, names }: Props) {
   useEffect(() => {
     setLang(readLang());
   }, []);
+
+  // On narrow screens the map is hidden behind the list. Leaflet measures its container when it is
+  // created, and a hidden container measures 0×0, which leaves a broken half-drawn map. So on phones
+  // the map is only created when the Map tab is showing.
+  const [isNarrow, setIsNarrow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 899px)");
+    const update = () => setIsNarrow(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  const showMap = !isNarrow || mode === "map";
   function toggleLang() {
     const next: Lang = lang === "en" ? "fr" : "en";
     setLang(next);
@@ -229,14 +242,16 @@ export default function Browser({ listings: initial, userId, names }: Props) {
           )}
         </section>
         <aside className="mapwrap">
-          <MapView
-            listings={filtered}
-            lang={lang}
-            userId={userId}
-            selected={selected}
-            visibleKey={mode}
-            onSelect={(id) => { setSelected(id); setMode("list"); }}
-          />
+          {showMap && (
+            <MapView
+              listings={filtered}
+              lang={lang}
+              userId={userId}
+              selected={selected}
+              visibleKey={mode}
+              onSelect={(id) => { setSelected(id); setMode("list"); }}
+            />
+          )}
         </aside>
       </div>
 
