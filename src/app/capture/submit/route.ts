@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     return new NextResponse(page("Nothing was received. Close this tab and click the bookmark again.", null), { headers: { "content-type": "text/html; charset=utf-8" } });
   }
   const payload = JSON.stringify({ url, title, html }).replace(/<\//g, "<\\/").replace(/<!--/g, "<\\!--");
-  return new NextResponse(page("Reading the page with Claude… 10 seconds for one listing, up to a minute for a results page.", payload), {
+  return new NextResponse(page("Reading the page with Claude… about 15 seconds for one listing, 1 to 3 minutes for a results page. Keep this tab open.", payload), {
     headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" },
   });
 }
@@ -49,15 +49,17 @@ ${payload ? `<script id="d" type="application/json">${payload}</script>
 (function(){
   var d=JSON.parse(document.getElementById('d').textContent);
   var s=document.getElementById('s');
-  s.innerHTML=s.textContent+'<br><small>'+d.url.replace(/</g,'&lt;')+'</small>';
+  var base=s.textContent,t0=Date.now();
+  var tick=setInterval(function(){s.innerHTML=base+' ('+Math.round((Date.now()-t0)/1000)+'s)<br><small>'+d.url.replace(/</g,'&lt;')+'</small>';},1000);
+  var stop=function(){clearInterval(tick);};
   fetch('/api/capture',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(d)})
-  .then(function(r){return r.text().then(function(t){var j;try{j=JSON.parse(t)}catch(e){throw new Error('The app answered with '+r.status+'. Try again in a minute.')}
+  .then(function(r){return r.text().then(function(t){stop();var j;try{j=JSON.parse(t)}catch(e){throw new Error('The app answered with '+r.status+'. Try again in a minute.')}
     if(r.status===401){s.className='err';s.innerHTML='You are not signed in to the app in this browser. <a href="/login" target="_blank">Sign in</a>, then close this tab and click the bookmark again.';return;}
     if(!r.ok)throw new Error(j.error||r.statusText);
     if(j.ok){s.className='ok';s.innerHTML='&#10003; Added '+j.created+' new, updated '+j.updated+' (source: '+j.source_site+'). <a href="/">Open the app</a>';}
     else{s.className='err';s.textContent='✕ '+(j.reason||'No listing found on that page.');}
   })})
-  .catch(function(e){s.className='err';s.textContent='✕ '+(e&&e.message?e.message:e);});
+  .catch(function(e){stop();s.className='err';s.textContent='✕ '+(e&&e.message?e.message:e);});
 })();
 </script>` : ""}
 </body></html>`;

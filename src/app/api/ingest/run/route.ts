@@ -4,7 +4,7 @@ import { runEmailIngestion } from "@/lib/imap";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 /** "Check inbox" button: same job as the scheduled run, triggered by a signed-in user. */
 export async function POST() {

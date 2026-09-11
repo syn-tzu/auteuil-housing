@@ -3,7 +3,7 @@ import { runEmailIngestion } from "@/lib/imap";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 /**
  * Called by Vercel Cron every 30 minutes (vercel.json), or manually:

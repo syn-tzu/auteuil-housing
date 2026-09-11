@@ -4,7 +4,7 @@ import { extractListings } from "@/lib/extract";
 import { ingestExtraction, logIngest } from "@/lib/ingest";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 /** Receives { url, html, title } from the bookmarklet's popup page (same origin, signed-in). */
 export async function POST(request: Request) {
@@ -23,6 +23,8 @@ export async function POST(request: Request) {
   if (!body.url || !body.html) return NextResponse.json({ error: "url and html required" }, { status: 400 });
 
   const externalId = `capture:${body.url}:${Date.now()}`;
+  // Log immediately so a timeout still leaves a trace in the Log page.
+  await logIngest({ channel: "capture", external_id: externalId, subject: body.title, status: "error", error: `started, ${Math.round(body.html.length / 1024)} KB of page received…` }).catch(() => {});
   try {
     const extraction = await extractListings({ kind: "page", html: body.html, url: body.url, subject: body.title });
     if (!extraction.is_listing_content || extraction.listings.length === 0) {
