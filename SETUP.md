@@ -83,6 +83,10 @@ The code is already on GitHub at https://github.com/syn-tzu/auteuil-housing (pri
    Dashboard**. Near the top you'll see the app's address, something like
    `https://auteuil-housing.vercel.app`. Copy it; you'll need it twice below.
 6. Open that address in your browser and sign in with the Supabase login you created in step 1.5.
+7. Tell Supabase where the app lives, so "Forgot your password?" emails link back to it: in Supabase go to
+   **Authentication → URL Configuration**. Set **Site URL** to the app's address
+   (`https://auteuil-housing.vercel.app`). Under **Redirect URLs** click **Add URL** and enter
+   `https://auteuil-housing.vercel.app/**`. Save.
 
 ### 5b. Make the inbox check run every 30 minutes
 

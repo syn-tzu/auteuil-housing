@@ -27,6 +27,14 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
+
+  // A Supabase email link that lands on the home page with "?code=…" needs the callback route.
+  if (path === "/" && request.nextUrl.searchParams.get("code")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    url.searchParams.set("next", "/auth/reset-password");
+    return NextResponse.redirect(url);
+  }
   const isPublic =
     path.startsWith("/login") ||
     path.startsWith("/api/cron") ||
