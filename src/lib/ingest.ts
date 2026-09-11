@@ -225,7 +225,8 @@ export async function logIngest(entry: {
   error?: string | null;
 }) {
   const db = createAdminClient();
-  await db.from("ingest_log").upsert(entry, { onConflict: "external_id" });
+  // A successful/skipped entry replaces any earlier "started…" note for the same email or capture.
+  await db.from("ingest_log").upsert({ error: null, ...entry }, { onConflict: "external_id" });
 }
 
 export async function alreadyIngested(external_id: string): Promise<boolean> {
