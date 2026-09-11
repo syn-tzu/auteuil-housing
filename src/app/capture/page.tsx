@@ -1,5 +1,21 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+/**
+ * React refuses to render `href="javascript:…"` (it substitutes a throwing stub), which is exactly
+ * what a bookmarklet needs. Setting the attribute directly on the DOM node after mount bypasses that.
+ */
+function Bookmarklet({ code, children, style }: { code: string; children: React.ReactNode; style?: React.CSSProperties }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    if (ref.current && code) ref.current.setAttribute("href", code);
+  }, [code]);
+  return (
+    <a ref={ref} className="bookmarklet" style={style} onClick={(e) => e.preventDefault()}>
+      {children}
+    </a>
+  );
+}
 
 /**
  * Shows the "Save to Auteuil" bookmarklet. Dragging it to the bookmarks bar gives a one-click
@@ -54,9 +70,7 @@ export default function CapturePage() {
       </p>
       <p>
         {origin ? (
-          <a className="bookmarklet" href={code} onClick={(e) => e.preventDefault()}>
-            ♥ Save to Auteuil
-          </a>
+          <Bookmarklet code={code}>♥ Save to Auteuil</Bookmarklet>
         ) : (
           <span className="bookmarklet" style={{ opacity: 0.5 }}>Loading…</span>
         )}
@@ -84,9 +98,7 @@ export default function CapturePage() {
         Drag this grey test button to your bookmarks bar too, then click it while on the property website:
       </p>
       <p>
-        <a className="bookmarklet" style={{ background: "#6b6b6b" }} href={testCode} onClick={(e) => e.preventDefault()}>
-          Test button
-        </a>
+        <Bookmarklet code={testCode} style={{ background: "#6b6b6b" }}>Test button</Bookmarklet>
       </p>
       <ul>
         <li>If a message pops up saying "the button works on …", bookmarks are running fine and the problem is
