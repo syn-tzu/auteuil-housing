@@ -10,19 +10,17 @@ export default function CapturePage() {
   const [origin, setOrigin] = useState("");
   useEffect(() => setOrigin(window.location.origin), []);
 
-  // Opens the receive window, waits for it to say "ready", then sends a trimmed copy of the page
-  // (scripts, styles and media removed, capped at ~3 MB) and keeps resending until it is acknowledged.
+  // Submits a trimmed copy of the page (scripts, styles and media removed, capped at ~3 MB) as a
+  // form POST into a new tab. A form submit from a click is never popup-blocked, unlike window.open.
   const code =
     `javascript:(function(){try{var o=${JSON.stringify(origin)};` +
-    `var w=window.open(o+'/capture/receive','auteuil_capture','width=460,height=600');` +
-    `if(!w){alert('Save to Auteuil: your browser blocked the popup window. Allow popups for this site and click again.');return;}` +
     `var c=document.documentElement.cloneNode(true);` +
     `c.querySelectorAll('script,style,noscript,svg,iframe,video,audio,link,template').forEach(function(e){e.remove()});` +
     `var h=c.outerHTML;if(h.length>3000000)h=h.slice(0,3000000);` +
-    `var done=false,n=0;` +
-    `var send=function(){if(done||n++>90)return;try{w.postMessage({type:'auteuil-capture',url:location.href,title:document.title,html:h},o);}catch(e){}setTimeout(send,1000);};` +
-    `window.addEventListener('message',function(ev){if(ev.origin!==o||!ev.data)return;if(ev.data.type==='auteuil-ready')send();if(ev.data.type==='auteuil-received')done=true;});` +
-    `setTimeout(send,1500);` +
+    `var f=document.createElement('form');f.method='POST';f.action=o+'/capture/submit';f.target='_blank';f.enctype='multipart/form-data';f.style.display='none';` +
+    `var add=function(n,v){var i=document.createElement('input');i.type='hidden';i.name=n;i.value=v;f.appendChild(i);};` +
+    `add('url',location.href);add('title',document.title);add('html',h);` +
+    `document.body.appendChild(f);f.submit();setTimeout(function(){f.remove();},2000);` +
     `}catch(e){alert('Save to Auteuil failed: '+e);}})();`;
 
   return (
@@ -61,13 +59,9 @@ export default function CapturePage() {
 
       <h2>2. Use it</h2>
       <p>
-        On a listing or results page, click the bookmark. A small window opens, sends the page to the app,
-        and tells you how many listings were added. Reading a results page takes 20 to 60 seconds. You must
-        be signed in to the app in the same browser; if not, the small window will ask you to sign in.
-      </p>
-      <p>
-        If nothing at all happens when you click, your browser blocked the popup: look for a small blocked-popup
-        icon at the right end of the address bar and choose "Always allow".
+        On a listing or results page, click the bookmark. A new tab opens, sends the page to the app, and tells
+        you how many listings were added. Reading a results page takes 20 to 60 seconds. You must be signed in
+        to the app in the same browser; if not, the new tab will ask you to sign in.
       </p>
     </main>
   );

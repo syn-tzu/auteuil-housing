@@ -40,6 +40,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/api/cron") ||
     path.startsWith("/auth") ||
     path === "/capture/receive" || // popup shell; the API call it makes still requires sign-in
+    path === "/capture/submit" || // bookmarklet form target; same, the API call requires sign-in
     path === "/manifest.webmanifest" ||
     path === "/icon.svg" ||
     (process.env.NODE_ENV !== "production" && path.startsWith("/preview"));
