@@ -39,11 +39,16 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/login") ||
     path.startsWith("/api/cron") ||
     path.startsWith("/auth") ||
+    path === "/capture/receive" || // popup shell; the API call it makes still requires sign-in
     path === "/manifest.webmanifest" ||
     path === "/icon.svg" ||
     (process.env.NODE_ENV !== "production" && path.startsWith("/preview"));
 
   if (!user && !isPublic) {
+    // API calls get a clear 401 instead of a redirect to an HTML page.
+    if (path.startsWith("/api/")) {
+      return NextResponse.json({ error: "not signed in" }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path);

@@ -10,15 +10,20 @@ export default function CapturePage() {
   const [origin, setOrigin] = useState("");
   useEffect(() => setOrigin(window.location.origin), []);
 
-  // Sends a trimmed copy of the page: scripts, styles and embedded media removed, capped at ~3 MB.
+  // Opens the receive window, waits for it to say "ready", then sends a trimmed copy of the page
+  // (scripts, styles and media removed, capped at ~3 MB) and keeps resending until it is acknowledged.
   const code =
-    `javascript:(function(){var o=${JSON.stringify(origin)};` +
+    `javascript:(function(){try{var o=${JSON.stringify(origin)};` +
+    `var w=window.open(o+'/capture/receive','auteuil_capture','width=460,height=600');` +
+    `if(!w){alert('Save to Auteuil: your browser blocked the popup window. Allow popups for this site and click again.');return;}` +
     `var c=document.documentElement.cloneNode(true);` +
-    `c.querySelectorAll('script,style,noscript,svg,iframe,video,audio,link').forEach(function(e){e.remove()});` +
+    `c.querySelectorAll('script,style,noscript,svg,iframe,video,audio,link,template').forEach(function(e){e.remove()});` +
     `var h=c.outerHTML;if(h.length>3000000)h=h.slice(0,3000000);` +
-    `var w=window.open(o+'/capture/receive','auteuil_capture','width=440,height=560');` +
-    `var n=0;var send=function(){n++;try{w.postMessage({type:'auteuil-capture',url:location.href,title:document.title,html:h},o);}catch(e){}if(n<6)setTimeout(send,800);};` +
-    `setTimeout(send,600);})();`;
+    `var done=false,n=0;` +
+    `var send=function(){if(done||n++>90)return;try{w.postMessage({type:'auteuil-capture',url:location.href,title:document.title,html:h},o);}catch(e){}setTimeout(send,1000);};` +
+    `window.addEventListener('message',function(ev){if(ev.origin!==o||!ev.data)return;if(ev.data.type==='auteuil-ready')send();if(ev.data.type==='auteuil-received')done=true;});` +
+    `setTimeout(send,1500);` +
+    `}catch(e){alert('Save to Auteuil failed: '+e);}})();`;
 
   return (
     <main className="page">
@@ -35,23 +40,34 @@ export default function CapturePage() {
       </ul>
 
       <h2>1. Add the button to your browser (once)</h2>
-      <p>Drag this to your bookmarks bar (on desktop Chrome, press Ctrl+Shift+B if the bar is hidden):</p>
+      <p>
+        Drag this blue button up onto your bookmarks bar and drop it there (on desktop Chrome or Edge, press
+        Ctrl+Shift+B if the bar is hidden). Clicking it here on this page does nothing on purpose.
+      </p>
       <p>
         <a className="bookmarklet" href={code} onClick={(e) => e.preventDefault()}>
           ♥ Save to Auteuil
         </a>
       </p>
       <p>
-        On Android Chrome: bookmark any page, then edit that bookmark and replace its address with the text below.
-        Afterwards, typing "Save to Auteuil" in the address bar while on a listing runs it.
+        <b>Can't drag it?</b> Right-click your bookmarks bar → <i>Add page…</i>, name it "Save to Auteuil",
+        and paste the text below as the URL.
       </p>
       <pre>{code}</pre>
+      <p>
+        On Android Chrome: bookmark any page, then edit that bookmark and replace its address with the text
+        above. Afterwards, typing "Save to Auteuil" in the address bar while on a listing runs it.
+      </p>
 
       <h2>2. Use it</h2>
       <p>
-        On a listing or results page, click the button. A small window opens, sends the page to the app, and
-        tells you how many listings were added. Reading a results page takes 20 to 60 seconds. You must be
-        signed in to the app in the same browser.
+        On a listing or results page, click the bookmark. A small window opens, sends the page to the app,
+        and tells you how many listings were added. Reading a results page takes 20 to 60 seconds. You must
+        be signed in to the app in the same browser; if not, the small window will ask you to sign in.
+      </p>
+      <p>
+        If nothing at all happens when you click, your browser blocked the popup: look for a small blocked-popup
+        icon at the right end of the address bar and choose "Always allow".
       </p>
     </main>
   );
